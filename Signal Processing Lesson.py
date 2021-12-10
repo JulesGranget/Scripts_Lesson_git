@@ -359,9 +359,63 @@ plt.show()
 
 
 
+########################
+######## XARRAY ########
+########################
+
+
+import xarray as xr
 
 
 
+# properties for the simulated data
+n_trials = 10
+n_channels = 5
+n_times = 500
+
+# generate coordinates
+conditions = ['Stimulus 0'] * 5 + ['Stimulus 1'] * 5
+channels = [f"ch_{k}" for k in range(n_channels)]
+times = np.arange(n_times) / 512.
+
+# create the (random) data
+data_np = np.random.rand(n_trials, n_channels, n_times)
+
+# create the DataArray, dims are name of dimensions, coords is the labelling
+data_xr = xr.DataArray(data_np, dims=('conditions', 'channels', 'times'), coords=(conditions, channels, times))
+
+# xarray info
+data_xr.name = 'GDR tuto'
+data_xr.attrs = {"sampling frequency": 512., "subject": 0, "info": "subject was distracted at sample 1s"}
+
+# informations
+data_xr.dims
+data_xr.coords
+data_xr.attrs
+
+# to select dims values
+data_xr['conditions'].data
+data_xr['channels'].data
+
+# to select specific data, use dims name
+data_xr.sel(times=slice(0., 0.5))
+data_xr.sel(channels='ch_1')
+
+# multi selection
+data_xr.sel(times=slice(0., 1.), channels=['O4-O3', "F'8-F'7"], trials='-1€')
+
+# to select with integer as usual
+data_xr.isel(times=0, channels=3)
+
+
+
+# outcomes = hga['trials'].data
+# is_1 = np.logical_or(outcomes == '-1€', outcomes == '+1€')
+# hga.sel(trials=is_1)
+
+
+
+#data_xr
 
 
 
