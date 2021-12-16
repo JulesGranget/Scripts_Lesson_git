@@ -1,3 +1,5 @@
+
+
 import os
 
 import numpy as np
@@ -359,6 +361,13 @@ plt.show()
 
 
 
+
+
+
+
+
+
+
 ########################
 ######## XARRAY ########
 ########################
@@ -368,60 +377,56 @@ import xarray as xr
 
 
 
-# properties for the simulated data
+#### properties for the simulated data
 n_trials = 10
 n_channels = 5
 n_times = 500
 
-# generate coordinates
+#### generate coordinates
 conditions = ['Stimulus 0'] * 5 + ['Stimulus 1'] * 5
 channels = [f"ch_{k}" for k in range(n_channels)]
 times = np.arange(n_times) / 512.
 
-# create the (random) data
+#### create the (random) data
 data_np = np.random.rand(n_trials, n_channels, n_times)
 
-# create the DataArray, dims are name of dimensions, coords is the labelling
-data_xr = xr.DataArray(data_np, dims=('conditions', 'channels', 'times'), coords=(conditions, channels, times))
+#### create the DataArray, dims are name of dimensions, coords is the labelling
+data_xr = xr.DataArray(data_np, dims=['conditions', 'channels', 'times'], coords=[conditions, channels, times]) # dims have to be in the data order
 
-# xarray info
-data_xr.name = 'GDR tuto'
-data_xr.attrs = {"sampling frequency": 512., "subject": 0, "info": "subject was distracted at sample 1s"}
+#### xarray info
+data_xr.name = 'GDR tuto' # ATTENTION if saved, the dataarray become a dataset and name a variable
+data_xr.attrs = {"srate": 512., "subject": 0, "info": "subject was distracted at sample 1s"}
 
-# informations
+#### informations
 data_xr.dims
 data_xr.coords
 data_xr.attrs
 
-# to select dims values
-data_xr['conditions'].data
+#### get values from attributes
+data_xr.attrs['srate']
+
+#### get values from dimensions, sauce Pandas
+data_xr['conditions'].data # return an array
 data_xr['channels'].data
 
-# to select specific data, use dims name
-data_xr.sel(times=slice(0., 0.5))
-data_xr.sel(channels='ch_1')
+#### indexing and slicing
+data_xr.sel(times=slice(0., 0.5)) # to get everything that append during a specific time
+data_xr.sel(channels='ch_1') # for coordinates that are not numerical
 
-# multi selection
-data_xr.sel(times=slice(0., 1.), channels=['O4-O3', "F'8-F'7"], trials='-1€')
+data_xr.sel(times=slice(0., 1.), channels=['ch_0', 'ch_1'], conditions='Stimulus 0') # for multi indexing
 
-# to select with integer as usual
-data_xr.isel(times=0, channels=3)
+data_xr.isel(times=0, channels=3) # to select with integer as usual, isel for 'int selection'
 
+#### mean
+data_xr.mean(dim='conditions') # mean along the conditions dimension
 
+#### groupby
+groupby_object = data_xr.groupby('conditions') # here all the groupby values are stocked in the same object 
+list_groupby = list(data_xr.groupby('conditions')) # better to access all dataarray
 
-# outcomes = hga['trials'].data
-# is_1 = np.logical_or(outcomes == '-1€', outcomes == '+1€')
-# hga.sel(trials=is_1)
-
-
-
-#data_xr
-
-
-
-
-
-
+#### plot data directly
+data_xr.mean(dim='conditions').sel(times=slice(0,1), channels='ch_0').plot()
+plt.show()
 
 
 
