@@ -490,7 +490,7 @@ srate = 10 # originate srate
 x  = np.array( [1, 4, 3, 6, 2, 19] )
 srate_resample = 10
 
-f = scipy.interpolate.interp1d(x, y, kind='quadratic') # exist different type of kind
+f = scipy.interpolate.interp1d(x, kind='quadratic') # exist different type of kind
 xnew = np.arange(x[0], x[-1], 1/srate_resample)
 ynew = f(xnew)
 
@@ -1712,7 +1712,9 @@ raw = mne.io.RawArray(data,info)
 
 
 # laplacian computation
+
 from surface_laplacian import surface_laplacian
+
 raw_lap_sl = surface_laplacian(raw=raw, m=4, leg_order=50, smoothing=1e-5) # MXC way
 
 raw_lap_mne = raw.copy()
@@ -1914,11 +1916,12 @@ from statsmodels.tsa.stattools import acf
 from statsmodels.tsa.ar_model import AutoReg
 from statsmodels.tsa.api import VAR
 
-
+df = data
 
 maxlag=12
 test = 'ssr_chi2test'
 def grangers_causation_matrix(data, variables, test='ssr_chi2test', verbose=False):    
+    
     """Check Granger Causality of all possible combinations of the Time series.
     The rows are the response variable, columns are predictors. The values in the table 
     are the P-Values. P-Values lesser than the significance level (0.05), implies 
@@ -1938,10 +1941,13 @@ def grangers_causation_matrix(data, variables, test='ssr_chi2test', verbose=Fals
             df.loc[r, c] = min_p_value
     df.columns = [var + '_x' for var in variables]
     df.index = [var + '_y' for var in variables]
+    
     return df
 
 grangers_causation_matrix(df, variables = df.columns)        
 
+chan1i = 0
+chan2i = 1
 
 data_GC = np.stack((data[chan1i,:], data[chan2i,:]), axis=1)
 test = 'ssr_chi2test'
