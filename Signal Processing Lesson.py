@@ -366,6 +366,52 @@ plt.show()
 
 
 
+########################
+######## PANDAS ########
+########################
+
+
+#### open, save
+df = pd.read_excel('file')
+df.to_excel('file.xlsx')
+
+#### generate df
+dict = {'name':['alex', 'sam', 'david'], 'sex' : [ 'F', 'M', 'M'], 'alcohol_consumption' : [False, True, True], 'drug_consumption' : [True, np.nan,  False], 'coding_level' : [ 83.5, 100., 19.3]}
+df = pd.DataFrame(dict)
+
+#### identify infos
+df.index
+df.columns
+
+#### indexing
+df[['alcohol_consumption', 'drug_consumption']]
+df['name']
+df.loc[:, ['alcohol_consumption', 'drug_consumption']]
+df.iloc[:, 2:4]
+
+#### conditional indexing
+df[df['coding_level']>80.]
+
+#### groupby
+df['sex'].mean()
+
+#### plot
+df['gdp'].plot()
+df['gdp'].plot.hist(bins=50)
+
+#### concat
+df2 = df.copy()
+df3 = pd.concat([df,df2], axis=0)
+
+#### drop
+df.drop(['alcohol_consumption', 'drug_consumption'], axis=1)
+
+
+
+
+
+
+
 
 
 ########################
@@ -393,6 +439,9 @@ data_np = np.random.rand(n_trials, n_channels, n_times)
 #### create the DataArray, dims are name of dimensions, coords is the labelling
 data_xr = xr.DataArray(data_np, dims=['conditions', 'channels', 'times'], coords=[conditions, channels, times]) # dims have to be in the data order
 
+dict_xr = {'conditions' : conditions, 'channels' : channels, 'times' : times}
+xr_export = xr.DataArray(data_np, dims=dict_xr.keys(), coords=dict_xr.values())
+
 #### xarray info
 data_xr.name = 'GDR tuto' # ATTENTION if saved, the dataarray become a dataset and name a variable
 data_xr.attrs = {"srate": 512., "subject": 0, "info": "subject was distracted at sample 1s"}
@@ -410,21 +459,32 @@ data_xr['conditions'].data # return an array
 data_xr['channels'].data
 
 #### indexing and slicing
-data_xr.sel(times=slice(0., 0.5)) # to get everything that append during a specific time
-data_xr.sel(channels='ch_1') # for coordinates that are not numerical
+data_xr[:, :2, :] # by integer
+data_xr.loc[:, ['ch_0', 'ch_1'], :] # by label
+data_xr.isel(channels=range(2)) # by name with integer
+data_xr.sel(channels=['ch_0', 'ch_1'])  # by name with label
 
 data_xr.sel(times=slice(0., 1.), channels=['ch_0', 'ch_1'], conditions='Stimulus 0') # for multi indexing
-
 data_xr.isel(times=0, channels=3) # to select with integer as usual, isel for 'int selection'
 
 #### mean
 data_xr.mean(dim='conditions') # mean along the conditions dimension
+data_xr.groupby('conditions').mean()
 
 #### groupby
 groupby_object = data_xr.groupby('conditions') # here all the groupby values are stocked in the same object 
 list_groupby = list(data_xr.groupby('conditions')) # better to access all dataarray
 
 #### plot data directly
+data_xr[0, 0, :].plot()
+plt.show()
+
+data_xr.plot.hist()
+plt.show()
+
+data_xr[:, 0, :].groupby('conditions').mean().plot.line(hue="conditions")
+plt.show()
+
 data_xr.mean(dim='conditions').sel(times=slice(0,1), channels='ch_0').plot()
 plt.show()
 
